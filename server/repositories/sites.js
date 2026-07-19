@@ -10,4 +10,7 @@ export const siteRepository = {
   async claimDueSpecificPages(limit = 5) { return unwrap(await getSupabaseAdmin().rpc('argus_claim_due_specific_page_scans', { p_limit: limit }), 'claim due specific page scans'); },
   async completeScheduledScan(siteId, scanRunId, leaseToken) { return unwrap(await getSupabaseAdmin().rpc('argus_complete_scheduled_scan', { p_site_id: siteId, p_scan_run_id: scanRunId, p_lease_token: leaseToken }), 'complete scheduled scan'); },
   async failScheduledScan(siteId, scanRunId, leaseToken, errorCode) { return unwrap(await getSupabaseAdmin().rpc('argus_fail_scheduled_scan', { p_site_id: siteId, p_scan_run_id: scanRunId, p_lease_token: leaseToken, p_error_code: errorCode }), 'fail scheduled scan'); },
+  async claimDueEntireWebsiteRediscoveries(limit = 2) { return unwrap(await getSupabaseAdmin().rpc('argus_claim_due_entire_website_rediscoveries', { p_limit: limit }), 'claim due entire website rediscoveries'); },
+  async completeEntireWebsiteRediscovery(siteId, scanRunId, leaseToken) { return unwrap(await getSupabaseAdmin().rpc('argus_complete_entire_website_rediscovery', { p_site_id: siteId, p_scan_run_id: scanRunId, p_lease_token: leaseToken }), 'complete entire website rediscovery'); },
+  async failEntireWebsiteRediscovery(siteId, scanRunId, leaseToken, errorCode) { return unwrap(await getSupabaseAdmin().rpc('argus_fail_entire_website_rediscovery', { p_site_id: siteId, p_scan_run_id: scanRunId, p_lease_token: leaseToken, p_error_code: errorCode }), 'fail entire website rediscovery'); },
 };
