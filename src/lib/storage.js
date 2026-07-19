@@ -1,8 +1,10 @@
-export const KEYS = { urls: 'argus:urls', snapshot: (id) => `argus:snapshot:${id}`, history: (id) => `argus:history:${id}`, pending: (id) => `argus:pending:${id}` };
+export const KEYS = { urls: 'argus:urls', selectedUrl: 'argus:selected-url', snapshot: (id) => `argus:snapshot:${id}`, history: (id) => `argus:history:${id}`, pending: (id) => `argus:pending:${id}` };
 const read = (key, fallback) => { try { const value = localStorage.getItem(key); return value === null ? fallback : JSON.parse(value); } catch { return fallback; } };
 const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
 export const getUrls = () => read(KEYS.urls, []);
 export const saveUrls = (urls) => write(KEYS.urls, urls);
+export const getSelectedUrl = () => localStorage.getItem(KEYS.selectedUrl);
+export const saveSelectedUrl = (url) => { if (url) localStorage.setItem(KEYS.selectedUrl, url); else localStorage.removeItem(KEYS.selectedUrl); };
 export const getSnapshot = (id) => localStorage.getItem(KEYS.snapshot(id));
 export const saveSnapshot = (id, text) => localStorage.setItem(KEYS.snapshot(id), text);
 export const getHistory = (id) => read(KEYS.history(id), []);

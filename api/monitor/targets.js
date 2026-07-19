@@ -1,0 +1,3 @@
+import { listSpecificPageTargets } from '../services/specific-page-monitor.js';
+import { siteRepository } from '../repositories/sites.js';
+export default async function handler(req, res) { if (req.method === 'GET') { try { return res.status(200).json({ targets: await listSpecificPageTargets() }); } catch { return res.status(503).json({ error: 'Authoritative monitor data is unavailable' }); } } if (req.method === 'DELETE' && typeof req.body?.siteId === 'string') { try { await siteRepository.archive(req.body.siteId); return res.status(204).end(); } catch { return res.status(404).json({ error: 'Monitor target was not found' }); } } return res.status(405).json({ error: 'Method not allowed' }); }
