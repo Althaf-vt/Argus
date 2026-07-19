@@ -16,21 +16,27 @@ export async function validatePublicUrl(value) {
   return target;
 }
 
-export async function fetchPublicHtml(url) {
-  let target = await validatePublicUrl(url); const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 10_000);
+export async function fetchPublicResource(url, { redirectLimit = 6, timeoutMs = 10_000, maxBytes = 1024 * 1024, accepts = null, invalidContentMessage = 'Target did not return an accepted document' } = {}) {
+  let target = await validatePublicUrl(url); const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     let response;
-    for (let redirects = 0; redirects < 6; redirects += 1) {
-      response = await fetch(target, { signal: controller.signal, redirect: 'manual', headers: { 'User-Agent': 'ARGUS-Monitor/2.0', Accept: 'text/html,application/xhtml+xml' } });
+    for (let redirects = 0; redirects <= redirectLimit; redirects += 1) {
+      response = await fetch(target, { signal: controller.signal, redirect: 'manual', headers: { 'User-Agent': 'ARGUS-Monitor/2.0', Accept: accepts ? 'text/html,application/xhtml+xml,application/xml,text/xml,text/plain' : 'text/html,application/xhtml+xml' } });
       if (response.status < 300 || response.status >= 400) break;
       const location = response.headers.get('location'); if (!location) throw new Error('Target returned an invalid redirect');
-      target = await validatePublicUrl(new URL(location, target)); if (redirects === 5) throw new Error('Too many redirects');
+      target = await validatePublicUrl(new URL(location, target)); if (redirects === redirectLimit) throw new Error('Too many redirects');
     }
     if (!response.ok) throw new Error(`Target URL returned HTTP ${response.status}`);
-    const contentType = response.headers.get('content-type') || ''; if (!/^(text\/html|application\/xhtml\+xml)(;|$)/i.test(contentType)) throw new Error('Target did not return an HTML document');
+    const contentType = response.headers.get('content-type') || ''; const expected = accepts || /^(text\/html|application\/xhtml\+xml)/i;
+    if (!expected.test(contentType)) throw new Error(invalidContentMessage);
     const reader = response.body?.getReader(); if (!reader) throw new Error('Target returned an empty response body'); let bytes = 0; const chunks = [];
-    while (true) { const { done, value } = await reader.read(); if (done) break; bytes += value.byteLength; if (bytes > 1024 * 1024) { await reader.cancel(); throw new Error('Target response exceeds the 1 MiB limit'); } chunks.push(value); }
+    while (true) { const { done, value } = await reader.read(); if (done) break; bytes += value.byteLength; if (bytes > maxBytes) { await reader.cancel(); throw new Error(maxBytes === 1024 * 1024 ? 'Target response exceeds the 1 MiB limit' : 'Target response exceeds the configured size limit'); } chunks.push(value); }
     const body = new Uint8Array(bytes); let offset = 0; chunks.forEach((chunk) => { body.set(chunk, offset); offset += chunk.byteLength; });
-    return { html: new TextDecoder().decode(body), fetchedAt: new Date().toISOString(), finalUrl: target.toString(), httpStatus: response.status };
-  } catch (error) { if (error?.name === 'AbortError') throw new Error('Request timed out after 10 seconds', { cause: error }); throw error; } finally { clearTimeout(timeout); }
+    return { body: new TextDecoder().decode(body), fetchedAt: new Date().toISOString(), finalUrl: target.toString(), httpStatus: response.status, contentType };
+  } catch (error) { if (error?.name === 'AbortError') throw new Error(`Request timed out after ${Math.ceil(timeoutMs / 1000)} seconds`, { cause: error }); throw error; } finally { clearTimeout(timeout); }
+}
+
+export async function fetchPublicHtml(url, options = {}) {
+  const response = await fetchPublicResource(url, { ...options, accepts: /^(text\/html|application\/xhtml\+xml)/i, invalidContentMessage: 'Target did not return an HTML document' });
+  return { html: response.body, fetchedAt: response.fetchedAt, finalUrl: response.finalUrl, httpStatus: response.httpStatus };
 }

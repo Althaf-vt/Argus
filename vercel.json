@@ -5,6 +5,9 @@
   "functions": {
     "api/*.js": {
       "maxDuration": 15
+    },
+    "api/monitor/sites.js": {
+      "maxDuration": 300
     }
   },
   "rewrites": [
