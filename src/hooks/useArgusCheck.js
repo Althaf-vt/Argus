@@ -28,7 +28,7 @@ export function useArgusCheck({ urlConfig, onComplete, onStatus, notify }) {
       setAgent(targetKey, 'fetcher', 'RUNNING'); await pause(180); setAgent(targetKey, 'fetcher', 'COMPLETE');
       setAgent(targetKey, 'differ', 'RUNNING'); await pause(180); setAgent(targetKey, 'differ', 'COMPLETE');
       setAgent(targetKey, 'analyst', 'RUNNING');
-      const response = await fetch('/api/monitor/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: target.url, label: target.label || '', filterNoise: target.filterNoise !== false }) });
+      const response = await fetch('/api/monitor/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: target.url, label: target.label || '', filterNoise: target.filterNoise !== false, monitorInterval: target.monitorInterval || 'MANUAL' }) });
       const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Authoritative check failed');
       setAgent(targetKey, 'analyst', result.outcome === 'CHANGE_DETECTED' ? 'COMPLETE' : 'IDLE'); setAgent(targetKey, 'notifier', 'RUNNING'); await pause(180); setAgent(targetKey, 'notifier', 'COMPLETE');
       const changed = result.outcome === 'CHANGE_DETECTED'; if (changed && ['HIGH', 'CRITICAL'].includes(result.analysis.severity)) handlers.current.notify?.(`ARGUS · ${result.analysis.severity}`, result.analysis.summary);

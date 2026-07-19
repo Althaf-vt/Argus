@@ -1,4 +1,4 @@
-import { fetchPublicHtml } from './lib/safe-fetch.js';
+import { fetchPublicHtml } from '../server/lib/safe-fetch.js';
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
 const requests = new Map();
 function limited(req) { const key = String(req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || 'anonymous').split(',')[0].trim(); const now = Date.now(); const recent = (requests.get(key) || []).filter((time) => now - time < 600000); if (recent.length >= 20) { requests.set(key, recent); return true; } recent.push(now); requests.set(key, recent); return false; }
