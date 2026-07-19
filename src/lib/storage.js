@@ -1,0 +1,14 @@
+export const KEYS = { urls: 'argus:urls', snapshot: (id) => `argus:snapshot:${id}`, history: (id) => `argus:history:${id}`, pending: (id) => `argus:pending:${id}` };
+const read = (key, fallback) => { try { const value = localStorage.getItem(key); return value === null ? fallback : JSON.parse(value); } catch { return fallback; } };
+const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+export const getUrls = () => read(KEYS.urls, []);
+export const saveUrls = (urls) => write(KEYS.urls, urls);
+export const getSnapshot = (id) => localStorage.getItem(KEYS.snapshot(id));
+export const saveSnapshot = (id, text) => localStorage.setItem(KEYS.snapshot(id), text);
+export const getHistory = (id) => read(KEYS.history(id), []);
+export const appendHistory = (id, event) => { const history = getHistory(id); if (!history.some((entry) => entry.id === event.id)) write(KEYS.history(id), [event, ...history].slice(0, 50)); };
+const restoreLegacyDiff = (diffSnippet) => { if (!diffSnippet) return null; const displayDiffs = diffSnippet.split('\n').filter(Boolean).map((line) => [line[0] === '+' ? 1 : line[0] === '-' ? -1 : 0, line[0] === '+' || line[0] === '-' || line[0] === ' ' ? line.slice(1) : line]).filter(([, text]) => text); return displayDiffs.length ? { displayDiffs, addedCount: 0, removedCount: 0 } : null; };
+export const getLatestChangeResult = (id) => { const event = getHistory(id).find((entry) => entry.summary && entry.severity); if (!event) return null; return { analysis: { summary: event.summary, severity: event.severity, areas_affected: event.areas_affected || [], recommended_action: event.recommended_action || '', reasoning: event.reasoning || '' }, diff: event.visualDiff || restoreLegacyDiff(event.diffSnippet), detectedAt: event.detectedAt }; };
+export const commitChange = (id, snapshot, event) => { write(KEYS.pending(id), { snapshot, event }); saveSnapshot(id, snapshot); appendHistory(id, event); localStorage.removeItem(KEYS.pending(id)); };
+export const recoverPendingChange = (id) => { const pending = read(KEYS.pending(id), null); if (!pending?.event || typeof pending.snapshot !== 'string') return; saveSnapshot(id, pending.snapshot); appendHistory(id, pending.event); localStorage.removeItem(KEYS.pending(id)); };
+export const removeUrlData = (id) => { localStorage.removeItem(KEYS.snapshot(id)); localStorage.removeItem(KEYS.history(id)); localStorage.removeItem(KEYS.pending(id)); };
