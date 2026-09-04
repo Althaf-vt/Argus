@@ -1,0 +1,6 @@
+{
+  "severity": "HIGH",
+  "summary": "Monthly pricing subscription modified from $29 to $49.",
+  "affectedAreas": ["section.pricing-card", "p.price-tier"],
+  "recommendations": ["Verify pricing sync with billing backend."]
+}
