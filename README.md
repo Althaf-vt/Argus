@@ -21,3 +21,10 @@ cp .env.example .env
 # Start development runtime
 npm run dev
 ```
+
+## Change Intelligence Severity Levels
+
+- `CRITICAL`: High-impact shifts in pricing, legal disclaimers, or authentication flows.
+- `HIGH`: Significant copy or structural additions to core product features.
+- `MEDIUM`: Standard marketing updates, navigation re-ordering, or UI restyles.
+- `LOW`: Minor typographical changes, date stamps, or asset path refactors.
