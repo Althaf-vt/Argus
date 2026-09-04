@@ -8,3 +8,16 @@ Argus provides autonomous web monitoring that tracks target URLs, parses structu
 - **API / Edge Layer**: Serverless micro-functions (`api/` runtime)
 - **Persistence Layer**: Supabase (PostgreSQL)
 - **Diff & Intelligence Engine**: `diff-match-patch`, Google Gemini API
+
+## Local Development
+
+```bash
+# Install project dependencies
+npm install
+
+# Configure environment secrets
+cp .env.example .env
+
+# Start development runtime
+npm run dev
+```
