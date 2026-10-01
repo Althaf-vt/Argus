@@ -1,6 +1,0 @@
-{
-  "endpoint": "/api/analyze-change",
-  "maxRequestsPerMinute": 60,
-  "maxPayloadBytes": 262144,
-  "timeoutMs": 15000
-}
